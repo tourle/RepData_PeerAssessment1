@@ -35,7 +35,7 @@ Use ddply from plyr package to sum steps per day and print the results
 ```r
 library(plyr)
 totalsteps<-ddply(dd,"date", numcolwise(sum), na.rm = TRUE)
-        #Make a plot because that is easier to read as an overview
+        #Plot as an overview of the data
         plot(totalsteps$date,totalsteps$steps,type="l",lwd=1,xlab="Date",ylab="Total steps",main="Total steps per day")
 ```
 
@@ -52,11 +52,27 @@ with(totalsteps, hist(totalsteps$steps, col= "cyan4", main = "Total steps", xlab
 ### 2.3 Calculate and report the mean and median of the total number of steps taken per day
 
 ```r
-stepsmean <- mean(totalsteps$steps, na.rm=TRUE)
-stepsmedian <- median(totalsteps$steps, na.rm=TRUE)
+stepsmean <- as.integer(mean(totalsteps$steps, na.rm=TRUE))
+stepsmedian <- as.integer(median(totalsteps$steps, na.rm=TRUE))
+stepsmean
 ```
 
-For steps taken per day, the mean is 9354.2295082 and the median is 10395.
+```
+## [1] 9354
+```
+
+```r
+stepsmedian
+```
+
+```
+## [1] 10395
+```
+
+
+For steps taken per day, overall the mean is 9354 (rounded) and the median is 10395 (rounded)
+
+
 
 ## 3.What is the average daily activity pattern?
 ### 3.1 Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
@@ -74,13 +90,13 @@ plot(averagesteps$interval,averagesteps$steps,type="l",lwd=1,xlab="Interval",yla
 
 ```r
 m <-max(averagesteps$steps)
-averagesteps[averagesteps$steps==m,]
+sm <- as.integer(m)
+maxint <- averagesteps[averagesteps$steps==m,1]
 ```
 
-```
-##     interval    steps
-## 104      835 206.1698
-```
+The interval with the maximum average steps of 206 (rounded) is interval number 835.
+
+
 
 ## 4. Imputing missing values
 ### 4.1 Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
@@ -120,11 +136,24 @@ plot(totalsteps2$date,totalsteps2$steps,type="l",lwd=1,xlab="Date",ylab="Total s
 
 ```r
 ##Mean and median for steps per day
-stepsmean2 <- mean(totalsteps2$steps, na.rm=TRUE)
-stepsmedian2 <- median(totalsteps2$steps, na.rm=TRUE)
+stepsmean2 <- as.integer(mean(totalsteps2$steps, na.rm=TRUE))
+stepsmedian2 <- as.integer(median(totalsteps2$steps, na.rm=TRUE))
+stepsmean2
 ```
 
-The mean of total steps taken per day is `rstepsmean2` and the median is 1.0766189 &times; 10<sup>4</sup>
+```
+## [1] 10766
+```
+
+```r
+stepsmedian2
+```
+
+```
+## [1] 10766
+```
+
+The mean of total steps taken per day is 10766 (rounded) and the median is 10766 (rounded).
 
 ### 4.5 Make a histogram of the total number of steps taken each day
 
@@ -146,6 +175,8 @@ with(totalsteps2, hist(totalsteps2$steps, col= "blue4", main = "Total steps usin
 
 
 Yes, comparing a dataset with missing values with a dataset that has imputed values, the values differ.
+Imputing values can create a skew in the data depending on where missing values are and also, if the right method is not used the mean and medians can change.  It would be better to use a more sophisticated method for imputing missing values.
+
 
 # What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
@@ -179,9 +210,13 @@ library(ggplot2)
 ggplot(avsteps, aes(x = interval, y = steps, group = wdaystring, color = wdaystring), lwd = 1.3) +
         geom_line() + facet_grid(wdaystring~.) +
         labs(x = "interval", y = "average steps", 
-        title = "Average steps per interval across weekdays and weekends")
+        title = "Average steps per interval across weekdays and weekends") +
+        theme(legend.title=element_blank())
 ```
 
 ![plot of chunk intervalstepsovertime](figure/intervalstepsovertime-1.png) 
 
-Imputing values can create a skew in the data depending on where missing values are and also, if the right method is not used the mean and medians can change.  It would be better to use a more sophisticated method for imputing missing values.
+
+On weekdays, average steps are very low for the early intervals and then are, generally for the rest of the intervals, higher than for weekend days.  The subjects in the study were more active during the week than on weekends but in the early hours of the morning, people were relatively inactive in the week and at weekends.
+
+
