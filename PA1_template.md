@@ -18,7 +18,8 @@ The variables included in this dataset are:
 
 ## Load and pre-process data to answer a number of questions.
 
-```{r readandprocess, results="hide"}
+
+```r
 dd <- read.table("activity.csv", sep=",",header=T, stringsAsFactors = FALSE)
 library(lubridate)
 dd$date <- ymd(dd$date)
@@ -30,87 +31,118 @@ dd$date <- ymd(dd$date)
 ### 2.1 Calculate the total number of steps taken per day
 Use ddply from plyr package to sum steps per day and print the results
 
-```{r totalsteps}
+
+```r
 library(plyr)
 totalsteps<-ddply(dd,"date", numcolwise(sum), na.rm = TRUE)
         #Make a plot because that is easier to read as an overview
         plot(totalsteps$date,totalsteps$steps,type="l",lwd=1,xlab="Date",ylab="Total steps",main="Total steps per day")
 ```
 
+![plot of chunk totalsteps](figure/totalsteps-1.png) 
+
 ### 2.2 Make a histogram of the total number of steps taken each day
-```{r histtotalsteps}
+
+```r
 with(totalsteps, hist(totalsteps$steps, col= "cyan4", main = "Total steps", xlab = "Steps"))
 ```
 
+![plot of chunk histtotalsteps](figure/histtotalsteps-1.png) 
+
 ### 2.3 Calculate and report the mean and median of the total number of steps taken per day
-```{r summarystepsperday}
+
+```r
 stepsmean <- mean(totalsteps$steps, na.rm=TRUE)
 stepsmedian <- median(totalsteps$steps, na.rm=TRUE)
 ```
 
-For steps taken per day, the mean is `r stepsmean` and the median is `r stepsmedian`.
+For steps taken per day, the mean is 9354.2295082 and the median is 10395.
 
 ## 3.What is the average daily activity pattern?
 ### 3.1 Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
-```{r avestepsovertime}
+
+```r
 averagesteps <- ddply(dd, c("interval"), summarise, steps = mean(steps, na.rm=TRUE))
 
 #Make a plot because that is easier to read as an overview
 plot(averagesteps$interval,averagesteps$steps,type="l",lwd=1,xlab="Interval",ylab="Average steps",main="Average steps per 5-minute interval")
 ```
 
+![plot of chunk avestepsovertime](figure/avestepsovertime-1.png) 
+
 ### 3.2 Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
-```{r intervalwithmaxsteps}
+
+```r
 m <-max(averagesteps$steps)
 averagesteps[averagesteps$steps==m,]
 ```
 
+```
+##     interval    steps
+## 104      835 206.1698
+```
+
 ## 4. Imputing missing values
 ### 4.1 Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
-```{r missingvals}
+
+```r
 rowsmissingvalues <- sum(is.na(dd))
 ```
-There are `r rowsmissingvalues` rows missing values (NA).
+There are 2304 rows missing values (NA).
 
 ### 4.2 Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
-```{r missingvalsformula, results="hide"}
+
+```r
 # Decided to use mean for intervals to fill in missing values
 impute.mean <- function(x) replace(x, is.na(x), mean(x, na.rm = TRUE))
 ```
 
 ### 4.3 Create a new dataset that is equal to the original dataset but with the missing data filled in.
-```{r fillmissingvals}
+
+```r
 ddimputed <- ddply(dd, ~ interval, transform, steps = impute.mean(steps))
 countna <- sum(is.na(ddimputed))
 ```
 
-There are `r countna` NA's in the new dataset.
+There are 0 NA's in the new dataset.
 
 
 ### 4.4 Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day.
-```{r histsummarysteps, results="hide"}
+
+```r
 #Create the dataset for the second dataset that has imputed values
 totalsteps2<-ddply(ddimputed,"date", numcolwise(sum))
 #Plot the data
 plot(totalsteps2$date,totalsteps2$steps,type="l",lwd=1,xlab="Date",ylab="Total steps",main="Total steps per day")
+```
+
+![plot of chunk histsummarysteps](figure/histsummarysteps-1.png) 
+
+```r
 ##Mean and median for steps per day
 stepsmean2 <- mean(totalsteps2$steps, na.rm=TRUE)
 stepsmedian2 <- median(totalsteps2$steps, na.rm=TRUE)
 ```
 
-The mean of total steps taken per day is `rstepsmean2` and the median is `r stepsmedian2`
+The mean of total steps taken per day is `rstepsmean2` and the median is 1.0766189 &times; 10<sup>4</sup>
 
 ### 4.5 Make a histogram of the total number of steps taken each day
-```{r histtotalstepsimputed}
+
+```r
 with(totalsteps2, hist(totalsteps2$steps, col= "cyan4", main = "Total steps", xlab = "Steps"))
 ```
 
+![plot of chunk histtotalstepsimputed](figure/histtotalstepsimputed-1.png) 
+
 # Do these values differ from the estimates from the first part of the assignment?
-```{r compareimputed}
+
+```r
 par(mfrow = c(2,1))    ## 2 rows, 1 column
 with(totalsteps, hist(totalsteps$steps, col= "cyan4", main = "Total steps using data with NA values", xlab = "Steps"))
 with(totalsteps2, hist(totalsteps2$steps, col= "blue4", main = "Total steps using data with imputed values", xlab = "Steps"))
 ```
+
+![plot of chunk compareimputed](figure/compareimputed-1.png) 
 
 
 Yes, comparing a dataset with missing values with a dataset that has imputed values, the values differ.
@@ -121,7 +153,8 @@ Yes, comparing a dataset with missing values with a dataset that has imputed val
 
 ### 5.1 Create a new factor variable in the dataset with two levels - "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
 
-```{r weekendfactor, results="hide"}
+
+```r
 #Function to work out if it's a weekday or weekend day
 dd3 <- ddimputed
 dd3$wdaystring <- as.character(wday(dd3$date))
@@ -137,7 +170,8 @@ dd3$wdaystring <- as.factor(dd3$wdaystring)
 
 
 ### 5.2 Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
-```{r intervalstepsovertime}
+
+```r
 #Create the dataset for the plot - we are going to ignore date so don't worry about it being part of the summary.
 avsteps <- aggregate(. ~ interval + date + wdaystring, data = dd3, FUN = mean)
 
@@ -147,5 +181,7 @@ ggplot(avsteps, aes(x = interval, y = steps, group = wdaystring, color = wdaystr
         labs(x = "interval", y = "average steps", 
         title = "Average steps per interval across weekdays and weekends")
 ```
+
+![plot of chunk intervalstepsovertime](figure/intervalstepsovertime-1.png) 
 
 Imputing values can create a skew in the data depending on where missing values are and also, if the right method is not used the mean and medians can change.  It would be better to use a more sophisticated method for imputing missing values.
